@@ -1,4 +1,6 @@
-// For debugging
+#ifndef RECCHECK
+
+// For debugging 
 #include <iostream>
 // For std::remove
 #include <algorithm> 
@@ -7,6 +9,9 @@
 #include "wordle.h"
 #include "dict-eng.h"
 //#include <cstring>
+
+#endif
+
 using namespace std;
 
 
