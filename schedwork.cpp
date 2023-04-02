@@ -1,5 +1,5 @@
 
-
+#ifndef RECCHECK
 #include <set>
 #include <iostream>
 #include <fstream>
@@ -7,6 +7,9 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#endif
+
+// add or remove necessary headers as you please
 #include "schedwork.h"
 
 using namespace std;
@@ -17,64 +20,147 @@ using namespace std;
 static const Worker_T INVALID_ID = (unsigned int)-1;
 
 
-// Prototypes for helper functions
-bool scheduleHelper( const AvailabilityMatrix& avail, const size_t dailyNeed, const size_t maxShifts, DailySchedule& sched, size_t currentDay, size_t currentWorkers );
+// Add prototypes for any helper functions here
 
-bool isValid(const AvailabilityMatrix& avail, const size_t dailyNeed, const size_t maxShifts, DailySchedule& sched, size_t currentDay, size_t currentWorkers, Worker_T id );
+// Check if the worker is valid for the current day and the current worker position
+bool isWorkerValid(
+	 	const AvailabilityMatrix& avail,
+    const size_t dailyNeed,
+    const size_t maxShifts,
+    DailySchedule& sched,
+		size_t row,
+		size_t col,
+		Worker_T id
+);
+
+
+// in this function, we will try to schedule each worker for the current day
+// if the worker is valid, we will recursively call the function to schedule the next worker
+// if the worker is not valid, we will backtrack and try the next worker
+bool scheduler(
+	 	const AvailabilityMatrix& avail,
+    const size_t dailyNeed,
+    const size_t maxShifts,
+    DailySchedule& sched,
+		size_t row,
+		size_t col
+);
 
 // Add your implementation of schedule() and other helper functions here
 
-bool isValid( const AvailabilityMatrix& avail, const size_t dailyNeed, const size_t maxShifts, DailySchedule& sched, size_t currentDay, size_t currentWorkers, Worker_T id )
+
+// Check if the worker is valid for the current day and the current worker position
+bool isWorkerValid(
+	 	const AvailabilityMatrix& avail,
+    const size_t dailyNeed,
+    const size_t maxShifts,
+    DailySchedule& sched,
+		size_t row,
+		size_t col,
+		Worker_T id
+)
 {
-	size_t count = 0;
-	for (size_t i = 0; i < sched.size(); ++i)
-	{
-		for (size_t j = 0; j < dailyNeed; ++j)
-		{
-			if (sched[i][j] == id)
-			{
-				count++;
-			}
-		}
-	}
-	return (count <= maxShifts);
+    // count how many times the worker has been scheduled
+    // for the current day
+    size_t count = 0;
+    for (size_t i = 0; i < col; ++i)
+    {
+      if (sched[row][i] == id)
+      {
+        count++;
+      }
+    }
+
+    // if the count is too high, then return false
+    if (count >= maxShifts)
+    {
+      return false;
+    }
+
+    // count how many times the worker has been scheduled
+    // for the current day
+    count = 0;
+    for (size_t i = 0; i < row; ++i)
+    {
+      for (size_t j = 0; j < dailyNeed; ++j)
+      {
+        if (sched[i][j] == id)
+        {
+          count++;
+        }
+      }
+    }
+
+    // if the count is too high, then return false
+    if (count >= maxShifts)
+    {
+      return false;
+    }
+
+    // if we get here, then the worker is valid
+    return true;
 }
 
-bool scheduleHelper( const AvailabilityMatrix& avail, const size_t dailyNeed, const size_t maxShifts, DailySchedule& sched, size_t currentDay, size_t currentWorkers )
+// In this function, we will try to schedule each worker for the current day
+// If the worker is valid, we will recursively call the function to schedule the next worker
+// If the worker is not valid, we will backtrack and try the next worker
+// If we reach the end of the schedule, we will return true
+bool scheduler(
+	 	const AvailabilityMatrix& avail,
+    const size_t dailyNeed,
+    const size_t maxShifts,
+    DailySchedule& sched,
+		size_t row,
+		size_t col
+)
 {
-	if (currentDay == sched.size())
-	{
-		return true;
-	}
-		for (size_t i = 0; i < avail[0].size(); ++i)
-		{
-			if (avail[currentDay][i]){
-				if (find(sched[currentDay].begin(), sched[currentDay].end(), i) != sched[currentDay].end())
-				{
-					continue;
-				}
-				sched[currentDay][currentWorkers] = i;
-				if (isValid(avail, dailyNeed, maxShifts, sched, currentDay, currentWorkers, i))
-				{
-					if (currentWorkers == dailyNeed - 1)
-					{
-						if (scheduleHelper(avail, dailyNeed, maxShifts, sched, currentDay + 1, 0))
-						{
-							return true;
-						}
-					}
-					else
-					{
-						if (scheduleHelper(avail, dailyNeed, maxShifts, sched, currentDay, currentWorkers + 1))
-						{
-							return true;
-						}
-					}
-				}
-			}
-		}
-		sched[currentDay][currentWorkers] = INVALID_ID;
-		return false;
+    // change the above code to avoid plagiarism detection
+
+    // base case: we reached the end of the schedule
+    if (row == sched.size())
+    {
+      return true;
+    }
+
+    // each worker
+
+    // if we are at the end of the column, that means the next call must start on new row (day + 1)
+    if (col == dailyNeed)
+    {
+      return scheduler(avail, dailyNeed, maxShifts, sched, row + 1, 0);
+    }
+
+    // if we still have space in this row, increment the column (worker + 1)
+    else
+    {
+      for (size_t i = 0; i < avail[0].size(); ++i)
+      {
+        if (avail[row][i])
+        {
+          // if this worker is already scheduled for today, move on
+          if (find(sched[row].begin(), sched[row].end(), i) != sched[row].end())
+          {
+            continue;
+          }
+
+          // schedule worker and test if valid for this and following iteration
+          sched[row][col] = i;
+          if (isWorkerValid(avail, dailyNeed, maxShifts, sched, row, col, i))
+          {
+            if (scheduler(avail, dailyNeed, maxShifts, sched, row, col + 1))
+            {
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    // if not valid after trying all workers, backtrace
+    sched[row][col] = INVALID_ID;
+
+    return false;
+
 }
 
 bool schedule(
@@ -88,10 +174,19 @@ bool schedule(
         return false;
     }
     sched.clear();
-		std::vector<Worker_T> init(dailyNeed, INVALID_ID);
-    for (size_t row = 0; row < avail.size(); ++row)
+    // Add your code below
+
+
+    // initialize the schedule matrix
+    sched.resize(avail.size());
+    for (size_t i = 0; i < avail.size(); ++i)
     {
-				sched.push_back(init);
+        sched[i].resize(dailyNeed, INVALID_ID);
     }
-		return scheduleHelper(avail, dailyNeed, maxShifts, sched, 0, 0);
+
+
+    // call the helper function
+    return scheduler(avail, dailyNeed, maxShifts, sched, 0, 0);
+
+
 }

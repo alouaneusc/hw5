@@ -1,9 +1,9 @@
 #ifndef RECCHECK
 
-// For debugging 
+// For debugging
 #include <iostream>
 // For std::remove
-#include <algorithm> 
+#include <algorithm>
 #include <map>
 #include <set>
 #include "wordle.h"
@@ -16,8 +16,7 @@ using namespace std;
 
 
 // Add prototypes of helper functions here
-
-void charCombiner(std::string in, unsigned int currentIndex, std::string floatingCopy, const std::set<std::string>& dict, std::set<std::string>& answers);
+void possibleCombinations(std::string in, unsigned int currentIndex, std::string floatingChars, const std::set<std::string>& dict, std::set<std::string>& possibleStrings);
 
 // Definition of primary wordle function
 std::set<std::string> wordle(
@@ -25,71 +24,59 @@ std::set<std::string> wordle(
     const std::string& floating,
     const std::set<std::string>& dict)
 {
-	std::set<std::string> validWords;
-
-	std::string input = in;
-	std::string floatingChars = floating;
-	charCombiner(input, 0, floatingChars, dict, validWords);
-	return validWords;
+    // Add your code here
+    std::set<std::string> possibleStrings;
+    std::string input = in, floatingChars = floating;
+    possibleCombinations(input, 0, floatingChars, dict, possibleStrings);
+    return possibleStrings;
 }
+
+
 
 // Define any helper functions here
 
-void charCombiner(std::string in, unsigned int currentIndex, std::string floatingCopy, const std::set<std::string>& dict, std::set<std::string>& answers)
+void possibleCombinations(std::string in, unsigned int currentIndex, std::string floatingChars, const std::set<std::string>& dict, std::set<std::string>& possibleStrings)
 {
-	unsigned int count = 0;
-	char character;
-	for (unsigned int i = 0; i < in.size(); ++i)
-	{
-		character = in[i];
-		if (character == '-')
-		{
-			count++;
-		}
-	} 
-	if (currentIndex == in.size())
-	{
-		std::set<std::string>::iterator dictFind = dict.find(in);
-		if (dictFind != dict.end())
-		{
-			answers.insert(in);
-		}
-		return;
-	}
-	character = in[currentIndex];
-	if (character != '-')
-	{
-			charCombiner(in, currentIndex + 1, floatingCopy, dict, answers);
-			return;
-	} else
-	{
-      if (count == floatingCopy.size())
-      {
-        for (unsigned int j = 0; j < floatingCopy.size(); ++j)
+    // if the current index is at the end of the string, check if the string is in the dictionary
+    if (currentIndex == in.size())
+    {
+
+        if (dict.find(in) != dict.end()) possibleStrings.insert(in);
+        return;
+    }
+    // if the current character is not a dash, call possibleCombinations with the next index
+    if (in[currentIndex] != '-')
+    {
+        possibleCombinations(in, currentIndex + 1, floatingChars, dict, possibleStrings);
+        return;
+    }
+    // if the number of dashes is equal to the number of floating characters, replace each dash with a floating character
+    if (count(in.begin(), in.end(), '-') == floatingChars.size())
+    {
+        for (unsigned int j = 0; j < floatingChars.size(); ++j)
         {
-          in[currentIndex] = floatingCopy[j];
-          std::string newFloatingCopy = floatingCopy;
-          newFloatingCopy.erase(j, 1);
-          charCombiner(in, currentIndex + 1, newFloatingCopy, dict, answers); 
+            in[currentIndex] = floatingChars[j];
+            std::string newfloatingChars = floatingChars;
+            newfloatingChars.erase(j, 1);
+            possibleCombinations(in, currentIndex + 1, newfloatingChars, dict, possibleStrings);
         }
-		}	else
-		{
-			for (int i = 0; i < 26; ++i)
-			{
-				char c = char(i + 97);
-				in[currentIndex] = c;
-				unsigned int floatingIndex = floatingCopy.find(c);
-				if (floatingIndex <= floatingCopy.size())
-				{
-					std::string newFloatingCopy = floatingCopy;
-					newFloatingCopy.erase(floatingIndex, 1);
-					charCombiner(in, currentIndex + 1, newFloatingCopy, dict, answers); 
-				}
-				else
-				{
-					charCombiner(in, currentIndex + 1, floatingCopy, dict, answers); 
-				}
-			}
-		}
-	}
+    }
+    else
+    {
+
+        for (int j = 0; j < 26; ++j)
+        {
+            char c = char(j + 97);
+            in[currentIndex] = c;
+            possibleCombinations(in, currentIndex + 1, floatingChars, dict, possibleStrings);
+        }
+        for (unsigned int j = 0; j < floatingChars.size(); ++j)
+        {
+            in[currentIndex] = floatingChars[j];
+            std::string newfloatingChars = floatingChars;
+            newfloatingChars.erase(j, 1);
+            possibleCombinations(in, currentIndex + 1, newfloatingChars, dict, possibleStrings);
+        }
+
+    }
 }
