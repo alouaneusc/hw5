@@ -1,7 +1,7 @@
 
 #ifndef RECCHECK
 #include <set>
-// #include <iostream>
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 // add or remove necessary headers as you please
 #include "schedwork.h"
 
-// using namespace std;
+using namespace std;
 
 // a constant that can be used to indicate an INVALID
 // worker ID if that is useful to your implementation.
@@ -114,7 +114,7 @@ bool scheduler(
 		size_t col
 )
 {
-    // change the above code to avoid plagiarism detection
+
 
     // base case: we reached the end of the schedule
     if (row == sched.size())
