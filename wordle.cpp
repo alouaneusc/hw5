@@ -1,7 +1,7 @@
 #ifndef RECCHECK
 
 // For debugging
-#include <iostream>
+// #include <iostream>
 // For std::remove
 #include <algorithm>
 #include <map>
@@ -12,7 +12,7 @@
 
 #endif
 
-using namespace std;
+// using namespace std;
 
 
 // Add prototypes of helper functions here
